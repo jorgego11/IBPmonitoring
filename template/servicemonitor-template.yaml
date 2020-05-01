@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    _PROJECT_: _MSP_
+  name: _PROJECT_-_MSP_
+  namespace: ibp-monitoring
+spec:
+  endpoints:
+  - interval: 15s
+    path: /metrics
+    port: operations
+    scheme: https
+    targetPort: _PORT_
+    tlsConfig:
+      certFile: /etc/prometheus/secrets/_PROJECT_-_MSP_-monitoring-secret/cert.pem
+      insecureSkipVerify: true
+      keyFile: /etc/prometheus/secrets/_PROJECT_-_MSP_-monitoring-secret/key.pem
+  namespaceSelector:
+    matchNames:
+    - _PROJECT_
+  selector:
+    matchLabels:
+      _MATCH_LABEL_

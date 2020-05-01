@@ -1,0 +1,69 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  labels:
+    prometheus: _PROJECT_
+  name: _PROJECT_
+  namespace: ibp-monitoring
+spec:
+  baseImage: registry.redhat.io/openshift4/ose-prometheus
+  containers:
+  - args:
+    - -provider=openshift
+    - -https-address=:9091
+    - -http-address=
+    - -email-domain=*
+    - -upstream=http://localhost:9090
+    - -htpasswd-file=/etc/proxy/htpasswd/auth
+    - -display-htpasswd-form=false
+    - -openshift-service-account=prometheus-_PROJECT_
+    - '-openshift-sar={"resource": "namespaces", "verb": "get"}'
+    - '-openshift-delegate-urls={"/": {"resource": "namespaces", "verb": "get"}}'
+    - -tls-cert=/etc/tls/private/tls.crt
+    - -tls-key=/etc/tls/private/tls.key
+    - -client-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+    - -cookie-secret-file=/etc/proxy/secrets/session_secret
+    - -openshift-ca=/etc/pki/tls/cert.pem
+    - -openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    - -skip-auth-regex=^/metrics
+    image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.2.11-201912100122
+    name: prometheus-proxy
+    ports:
+    - containerPort: 9091
+      name: web
+    resources: {}
+    volumeMounts:
+    - mountPath: /etc/tls/private
+      name: secret-prometheus-_PROJECT_-tls
+    - mountPath: /etc/proxy/secrets
+      name: secret-prometheus-_PROJECT_-proxy
+    - mountPath: /etc/proxy/htpasswd
+      name: secret-prometheus-_PROJECT_-htpasswd
+  listenLocal: true
+  replicas: 1
+  resources: {}
+  retention: 15d
+  secrets:
+  - prometheus-_PROJECT_-tls
+  - prometheus-_PROJECT_-proxy
+  - prometheus-_PROJECT_-htpasswd
+  - _PROJECT_-_MSP_-monitoring-secret
+  securityContext:
+    runAsUser: 0 # run as root so that can create folders inside /prometheus
+  serviceAccountName: prometheus-_PROJECT_
+  serviceMonitorSelector:
+    matchExpressions:
+    - key: _PROJECT_
+      operator: Exists
+  storage:
+    resources: {}
+    volumeClaimTemplate:
+      metadata: {}
+      spec:
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: portworx-sc
+      status: {}
+  tag: v4.2.11-201912100122
+  version: v2.3.2

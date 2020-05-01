@@ -1,0 +1,23 @@
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDataSource
+metadata:
+  name: _PROJECT_-prometheus-datasources
+  namespace: ibp-monitoring
+spec:
+  datasources:
+    - access: proxy
+      basicAuth: true
+      basicAuthUser: ibp
+      editable: true
+      isDefault: false
+      jsonData:
+        timeInterval: 5s
+        tlsSkipVerify: true
+      name: _PROJECT_-prometheus
+      orgId: 1
+      type: prometheus
+      url: https://prometheus-_PROJECT_.ibp-monitoring.svc:9091
+      secureJsonData:
+        basicAuthPassword: monitoring
+      version: 1
+  name: _PROJECT_-prometheus-datasources.yaml
